@@ -1,44 +1,33 @@
-#global		snap r9671
-
-# TODO:
-# *  port .spec to use cmake
-
 # trim changelog included in binary rpms
 %global _changelog_trimtime %(date +%s -d "1 year ago")
 
-Summary:	C++ user interface toolkit
-Name:		fltk
-Version:	1.3.4
-Release:	5%{?dist}
+Name:    fltk
+Summary: C++ user interface toolkit
+Version: 1.3.4
+Release: 6%{?dist}
 
 # see COPYING (or http://www.fltk.org/COPYING.php ) for exceptions details
-License:	LGPLv2+ with exceptions	
-Group:		System Environment/Libraries
-URL:		http://www.fltk.org/
-%if "%{?snap:1}" == "1"
-Source0:        http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-%{snap}.tar.bz2
-%else
-Source0:        http://fltk.org/pub/fltk/1.3.4/fltk-1.3.4-1-source.tar.gz
-%endif
+License: LGPLv2+ with exceptions
+URL:     http://www.fltk.org/
+
+Source0: http://fltk.org/pub/fltk/1.3.4/fltk-1.3.4-1-source.tar.gz
 
 Source1: fltk-config.sh
 
-## FIXME/TODO: upstream these asap -- Rex
 # add lib64 support, drop extraneous libs (bug #708185) and ldflags (#1112930)
-Patch1:        	fltk-1.3.4-fltk_config.patch
-
-## upstream patches
-
-## upstreamable patches
-Patch100: fltk-1.3.4-x-fluid_mimetype.patch
+Patch1:  fltk-1.3.4-fltk_config.patch
+Patch2:  fltk-1.3.4-x-fluid_mimetype.patch
+# CVE-2026-116723 / CVE-2026-116724
+# https://github.com/fltk/fltk/commit/3a049d8262dc759cf9737339420e8457e24c0cb1
+Patch3:  fltk-fix-bmp-image-loader-stack-and-heap-buffer-overflow-via-crafted-bmp-file.patch
 
 BuildRequires: desktop-file-utils
 BuildRequires: libjpeg-devel
 BuildRequires: pkgconfig(libpng)
-BuildRequires: pkgconfig(gl) pkgconfig(glu) 
+BuildRequires: pkgconfig(gl) pkgconfig(glu)
 BuildRequires: pkgconfig(ice)
-BuildRequires: pkgconfig(sm) 
-BuildRequires: pkgconfig(xext) pkgconfig(xinerama) pkgconfig(xft) pkgconfig(xt) pkgconfig(x11) 
+BuildRequires: pkgconfig(sm)
+BuildRequires: pkgconfig(xext) pkgconfig(xinerama) pkgconfig(xft) pkgconfig(xt) pkgconfig(x11)
 BuildRequires: pkgconfig(xcursor)
 BuildRequires: pkgconfig(xproto)
 BuildRequires: xorg-x11-utils
@@ -72,18 +61,15 @@ Summary: Fast Light User Interface Designer
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: %{name}-devel
 %description fluid
-%{summary}, an interactive GUI designer for %{name}. 
+%{summary}, an interactive GUI designer for %{name}.
 
 
 %prep
-%if 0%{?snap:1}
-%setup -q -n fltk-1.3.x-%{snap}
-%else
 %setup -q  -n fltk-%{version}-1
-%endif
 
 %patch1 -p1 -b .fltk_config
-%patch100 -p1 -b .x-fluid_mimetype
+%patch2 -p1 -b .x-fluid_mimetype
+%patch3 -p1 -b .fltk-fix-bmp-image-loader-stack-and-heap-buffer-overflow-via-crafted-bmp-file
 
 # verbose build output
 sed -i.silent '\,^.SILENT:,d' makeinclude.in
@@ -172,6 +158,12 @@ desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/fluid.desktop
 
 
 %changelog
+* Mon Oct 26 2026 RHEL Packaging Agent <redhat-ymir-agent@redhat.com> - 1.3.4-6
+- CVE-2026-116724 fltk: fltk: Arbitrary code execution via integer overflow in BMP image parsing
+- CVE-2026-116723 fltk: fltk: Arbitrary code execution via crafted BMP image file
+  Resolves: RHEL-292222
+  Resolves: RHEL-292233
+
 * Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1.3.4-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
@@ -339,7 +331,7 @@ desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/fluid.desktop
 * Tue Feb 19 2008 Rex Dieter <rdieter@fedoraproject.org> 1.1.8-0.8.r6027
 - fltk-1.1.x-r6027
 
-* Mon Feb 11 2008 Rex Dieter <rdieter@fedoraproject.org> 1.1.8-0.7.r5989 
+* Mon Feb 11 2008 Rex Dieter <rdieter@fedoraproject.org> 1.1.8-0.7.r5989
 - respin (gcc43)
 
 * Wed Dec 12 2007 Rex Dieter <rdieter[AT]fedoraproject.org> 1.1.8-0.6.r5989
