@@ -1,28 +1,25 @@
-#global		snap r9671
-
 # trim changelog included in binary rpms
 %global _changelog_trimtime %(date +%s -d "1 year ago")
 
-Summary:	C++ user interface toolkit
-Name:		fltk
-Version:	1.3.8
-Release:	1%{?dist}
+Name:    fltk
+Summary: C++ user interface toolkit
+Version: 1.3.8
+Release: 1%{?dist}.1
 
 # see COPYING (or http://www.fltk.org/COPYING.php ) for exceptions details
-License:	LGPLv2+ with exceptions	
-URL:		http://www.fltk.org/
+License: LGPLv2+ with exceptions
+URL:     http://www.fltk.org/
 
-%if "%{?snap:1}" == "1"
-Source0:        http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-%{snap}.tar.bz2
-%else
-Source0:        http://fltk.org/pub/%{name}/%{version}/%{name}-%{version}-source.tar.gz
-%endif
+Source0: http://fltk.org/pub/%{name}/%{version}/%{name}-%{version}-source.tar.gz
 
-Source1:        fltk-config.sh
+Source1: fltk-config.sh
 
-Patch0:         fltk-cmake.patch
+Patch0:  fltk-cmake.patch
 # add lib64 support, drop extraneous libs (bug #708185) and ldflags (#1112930)
-Patch1:         fltk-1.3.4-fltk_config.patch
+Patch1:  fltk-1.3.4-fltk_config.patch
+# CVE-2026-116723 / CVE-2026-116724
+# https://github.com/fltk/fltk/commit/3a049d8262dc759cf9737339420e8457e24c0cb1
+Patch2:  fltk-fix-bmp-image-loader-stack-and-heap-buffer-overflow-via-crafted-bmp-file.patch
 
 BuildRequires: gcc-c++
 BuildRequires: cmake
@@ -73,15 +70,11 @@ Summary: Fast Light User Interface Designer
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: %{name}-devel
 %description fluid
-%{summary}, an interactive GUI designer for %{name}. 
+%{summary}, an interactive GUI designer for %{name}.
 
 
 %prep
-%if 0%{?snap:1}
-%autosetup -p1 -n fltk-1.3.x-%{snap}
-%else
 %autosetup -p1
-%endif
 
 
 %build
@@ -151,6 +144,12 @@ desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/fluid.desktop
 
 
 %changelog
+* Mon Nov 09 2026 RHEL Packaging Agent <redhat-ymir-agent@redhat.com> - 1.3.8-1.1
+- CVE-2026-116724 fltk: fltk: Arbitrary code execution via integer overflow in BMP image parsing
+- CVE-2026-116723 fltk: fltk: Arbitrary code execution via crafted BMP image file
+  Resolves: RHEL-292242
+  Resolves: RHEL-292232
+
 * Fri Dec 17 2021 Jan Grulich <jgrulich@redhat.com> - 1.3.8-1
 - 1.3.8
   Resolves: bz#2025415
@@ -377,7 +376,7 @@ desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/fluid.desktop
 * Tue Feb 19 2008 Rex Dieter <rdieter@fedoraproject.org> 1.1.8-0.8.r6027
 - fltk-1.1.x-r6027
 
-* Mon Feb 11 2008 Rex Dieter <rdieter@fedoraproject.org> 1.1.8-0.7.r5989 
+* Mon Feb 11 2008 Rex Dieter <rdieter@fedoraproject.org> 1.1.8-0.7.r5989
 - respin (gcc43)
 
 * Wed Dec 12 2007 Rex Dieter <rdieter[AT]fedoraproject.org> 1.1.8-0.6.r5989
